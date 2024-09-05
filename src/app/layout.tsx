@@ -5,6 +5,7 @@ import '@/app/app.css';
 import type { Metadata } from 'next';
 import { Noto_Sans } from 'next/font/google';
 import Link from 'next/link';
+import { GoogleTagManager } from '@next/third-parties/google';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const notoSans = Noto_Sans({
@@ -30,6 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID!} />
       <body className="font-noto-sans dark:bg-slate-800">
         <div className="prose prose-slate dark:prose-invert mx-auto max-w-3xl p-6">
           <header>
