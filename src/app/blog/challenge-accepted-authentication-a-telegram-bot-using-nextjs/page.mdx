@@ -1,0 +1,178 @@
+import Image from 'next/image';
+import openGraphImage from './opengraph-image.jpg';
+import { PostHeader } from '@/components/PostHeader';
+
+export const metadata = {
+  title: 'Challenge Accepted: Authenticating a Telegram Bot Using Next.js',
+  description:
+    'Explore how to seamlessly authenticate a Telegram bot using Next.js by creating a magic link system for effortless customer onboarding.',
+  openGraph: {
+    type: 'article',
+    publishedTime: '2024-09-02',
+    images: [
+      {
+        url: openGraphImage.src,
+        width: 1024,
+        height: 544,
+        alt: 'an 8bit pixel art image of a cute robot looking at a Telegram message on a giant mobile phone screen',
+      },
+    ],
+  },
+};
+
+<PostHeader {...metadata} />
+
+You may wonder what the relation is between authenticating a Telegram bot and a Next.js app. Let me tell you something: everything is possible in the world of indie hacking 😅
+
+Here is my story.
+
+I wanted to create an [AI language tutor](https://parlamigo.com) bot on Telegram with a subscription model. A landing site with a checkout page was needed as the sales funnel. Since I already had experience with Next.js, I decided to use it for the landing site.
+
+However, there was a small issue. How could I onboard the customer after the purchase? I needed to authenticate the customer in the bot. My only requirement was that it be as seamless as possible.
+
+First, I tried these options:
+
+- [Telegram Login Widget](https://core.telegram.org/widgets/login)
+- [Supabase Auth](https://supabase.com/auth)
+
+But none met my requirement. They were either too complicated or not seamless enough.
+
+After some brainstorming, I found the perfect solution. It's possible to open a Telegram bot using [deep links](https://core.telegram.org/api/links#bot-links) with a search parameter called `start`. This makes magic link authentication possible. I could create a magic link after the purchase and redirect the customer to the bot with the link. The customer would be authenticated in the bot without any additional steps.
+
+However, the `start` parameter only accepts a 64-character string. This eliminates any JWT authentication like Supabase. As a result, I decided to implement my own magic link authentication system with Next.js.
+
+## How Does It Work?
+
+First, I wanted to authenticate the customer in the Next.js app before the purchase.
+
+- Get the customer's email.
+- Create a user and a unique token, and store them in the database.
+- Send an email to the customer with a Next.js route link containing the token.
+- When the customer clicks the link, check the validity of the token and authenticate the user.
+
+Once the customer is authenticated, I can create a Telegram bot link with a fresh token and redirect the customer to the bot after the purchase. This way, the customer is authenticated in the bot without any additional steps. No need to enter an email in the bot.
+
+## Database Schema
+
+I created two tables in the database: `users` and `auth_tokens`. The `users` table stores the user's email, and the `auth_tokens` table stores the token and the user ID.
+
+The most important part is token security. An auth token should only be used for authentication and creating a session. This way, even if a token is leaked, it can't be used to access the user's data.
+
+For extra security, I set the token expiration time to 5 minutes, and the token is marked as used after the authentication.
+
+```sql
+CREATE TABLE users (
+  id BIGSERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  date_created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  date_updated TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE auth_tokens (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token CHAR(64) NOT NULL,
+  used BOOLEAN NOT NULL DEFAULT FALSE,
+  date_created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  date_expires TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '5 minutes')
+);
+```
+
+## User and Token Creation
+
+I created an email form and a [Next.js action](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) to create a user and a token. After the user is created, I send an email with the token link.
+
+```ts
+// Limit requests to one per minute
+const existingToken = await sql`
+  SELECT 1 FROM auth_tokens
+  INNER JOIN users ON users.id = auth_tokens.user_id
+  WHERE users.email = ${email}
+    AND auth_tokens.date_created >= now() - interval '1 minute'
+    AND auth_tokens.date_expires >= now()
+  LIMIT 1
+`.then((result) => result[0]);
+
+if (existingToken) {
+  return { error: 'Please wait a minute before requesting a new link.' };
+}
+
+// Insert or update user
+const user = await sql`
+  INSERT INTO users (email)
+  VALUES (${email})
+  ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email
+  RETURNING id
+`.then((result) => result[0]);
+
+// Generate new token
+const token = crypto.randomBytes(32).toString('hex');
+
+// Insert new token
+await sql`
+  INSERT INTO auth_tokens (user_id, token)
+  VALUES (${user.id}, ${token})
+`;
+
+// Send email
+```
+
+## Authentication
+
+I created a [Next.js route handler](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) to verify the token and authenticate the user. The route URL is the magic link sent to the customer.
+
+```ts
+const searchParams = request.nextUrl.searchParams;
+const token = searchParams.get('token');
+
+// Verify and update the token as used
+const userId = await sql`
+  UPDATE auth_tokens
+  SET used = true
+  WHERE token = ${token}
+    AND used = false
+    AND date_expires >= NOW()
+  RETURNING user_id
+`.then((result) => result[0]?.user_id);
+
+if (!userId) {
+  // Token is invalid
+}
+
+// Query the users table
+const user = await sql`
+  SELECT *
+  FROM users
+  WHERE id = ${userId}
+  LIMIT 1
+`.then((result) => result[0]);
+
+// Create a session
+```
+
+## Telegram Bot Link
+
+Once the user is authenticated in the Next.js app, I can create a Telegram bot link with a fresh token and redirect the customer to the bot. I created a dedicated route for this to be able to use it after the purchase and also later when needed.
+
+```ts
+const token = crypto.randomBytes(32).toString('hex');
+
+// Insert new token
+await sql`
+  INSERT INTO auth_tokens (user_id, token)
+  VALUES (${user.id}, ${token})
+`;
+
+const redirectTo = new URL(
+  `/${process.env.TELEGRAM_BOT_NAME}?start=${token}`,
+  'https://t.me',
+);
+
+redirect(redirectTo.toString());
+```
+
+After the user clicks the link, the Telegram bot is opened with the token. The bot can authenticate the user with the token and create a session.
+
+## Conclusion
+
+I think this is the most seamless way to onboard a customer to my Telegram bot after a purchase. The same authentication method could be used directly from the bot without a landing page as well. In that case, you can ask for the user's email inside the bot, and the magic link would be the bot link itself.

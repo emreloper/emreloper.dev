@@ -1,0 +1,39 @@
+{
+  "name": "emreloper.dev",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.1.5",
+    "@mdx-js/react": "^3.0.1",
+    "next": "15.0.0-canary.138",
+    "react": "19.0.0-rc-7771d3a7-20240827",
+    "react-dom": "19.0.0-rc-7771d3a7-20240827",
+    "rehype-highlight": "^7.0.0"
+  },
+  "devDependencies": {
+    "@mdx-js/loader": "^3.0.1",
+    "@next/mdx": "^14.2.7",
+    "@tailwindcss/postcss": "^4.0.0-alpha.21",
+    "@tailwindcss/typography": "^0.5.15",
+    "@types/mdx": "^2.0.13",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "15.0.0-canary.138",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.6",
+    "tailwindcss": "^4.0.0-alpha.21",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "react": "19.0.0-rc-7771d3a7-20240827",
+    "react-dom": "19.0.0-rc-7771d3a7-20240827"
+  }
+}
