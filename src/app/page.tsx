@@ -46,7 +46,10 @@ export default async function Page() {
           const image = openGraph.images[0];
 
           return (
-            <article key={article.slug} className="flex gap-x-4 md:gap-x-8">
+            <article
+              key={article.slug}
+              className="flex items-start gap-x-4 md:gap-x-8"
+            >
               <div className="grow">
                 <h3>
                   <Link href={`/blog/${slug}`}>{title as string}</Link>
@@ -62,13 +65,13 @@ export default async function Page() {
                   )}
                 </p>
               </div>
-              <div className="w-20 flex-none md:w-40">
+              <div className="relative aspect-[1/1] w-20 flex-none md:w-40">
                 <Image
-                  src={image.url as string}
+                  className="object-cover"
+                  src={image.url.toString()}
                   alt={image.alt ?? ''}
-                  width={160}
-                  height={160}
                   sizes="160px"
+                  fill
                 />
               </div>
             </article>
