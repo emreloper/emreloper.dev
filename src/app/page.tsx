@@ -29,6 +29,12 @@ export default async function Page() {
       }, []),
   );
 
+  articles.sort(
+    (a, b) =>
+      new Date(b.metadata.openGraph.publishedTime).getTime() -
+      new Date(a.metadata.openGraph.publishedTime).getTime(),
+  );
+
   return (
     <main>
       <article>
