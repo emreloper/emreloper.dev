@@ -1,0 +1,276 @@
+import Image from 'next/image';
+import openGraphImage from './opengraph-image.jpg';
+import { PostHeader } from '@/components/PostHeader';
+
+export const metadata = {
+  title: 'Paddle and Next.js Integration using App Router',
+  description:
+    'Learn how to integrate Paddle with Next.js using the App Router to create a seamless checkout experience for your customers.',
+  openGraph: {
+    type: 'article',
+    publishedTime: '2024-09-07',
+    images: [
+      {
+        url: openGraphImage.src,
+        width: 1024,
+        height: 544,
+        alt: 'a pixel art image of person purchasing something online using a computer',
+      },
+    ],
+  },
+};
+
+<PostHeader {...metadata} />
+
+I recently launched my first product, an [AI language tutor](https://parlamigo.com) on Telegram. One of the first things I had to decide was a payment provider.
+
+After debating between Stripe, Lemon Squeezy, and [Paddle](https://www.paddle.com/), I decided to go with the latter. Stripe is not a merchant of record, and Lemon Squeezy had hidden fees. Paddle, on the other hand, ticked all the boxes.
+
+However, it comes with its own problems. Unfortunately, it doesn't provide purchase links, pre-built checkout pages, or price tables. You have to build everything yourself.
+
+In this post, I'll show you how I integrated Paddle with Next.js for a subscription-based product.
+
+## Creating a Sandbox Account for Development
+
+I assume you don't want to make real purchases every time you need to test the checkout flow. You have to create a sandbox account for development.
+
+Head over to the [Paddle Sandbox Dashboard](https://sandbox-vendors.paddle.com) and create an account. You can use the same email as your production account. They are independent of each other.
+
+## Creating Products
+
+After creating an account, you have to create products. If you're selling a subscription, you can think of products as subscription tiers. For example, if you have `basic` and `pro` tiers, you can create two products: one for `basic` and one for `pro`.
+
+Head over to [Catalog / Products](https://sandbox-vendors.paddle.com/products-v2) and create your products.
+
+## Creating Prices
+
+We said that products are like subscription tiers. Prices are the payment plans for these tiers. You can create multiple prices for a single product. For example, you can create a monthly and a yearly price for each tier.
+
+Click one of your products to create a price for it. Set `Min` and `Max` fields to `1` if you're selling a subscription to avoid multiple purchases.
+
+Each price has a unique price ID. You will use this ID to create a checkout link.
+
+## Setting Environment Variables
+
+Before we start coding, we have to set some environment variables. Head over to [Developer Tools / Authentication](https://sandbox-vendors.paddle.com/authentication-v2) to get your client token.
+
+Create a `.env.development` file in the root of your project and set the following variables.
+
+```text filename=".env.development"
+NEXT_PUBLIC_PADDLE_ENVIRONMENT=sandbox
+NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=
+```
+
+## Implementing a Checkout Page
+
+Paddle supports two types of checkout: overlay and inline. I chose overlay checkout since it's much easier to implement. Inline checkout doesn't show any product or price information, so you have to build your own UI.
+
+I recommend creating a dedicated page even if you decide to use overlay checkout like me. This provides two benefits:
+
+- You have a shareable checkout link like Stripe.
+- The same page can be used for payment method update link.
+
+First, go to the [Checkout Settings](https://sandbox-vendors.paddle.com/checkout-settings) page and set the `Default payment link`. This is used by Paddle to create payment method update links.
+
+Create a new page under the app directory without `use client` in it. Keep it as a RSC to fetch any server data. You can then pass them to `<Checkout />` as props.
+
+```tsx filename="src/app/checkout/page.tsx"
+import { Checkout } from '@/components/Checkout';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Checkout',
+};
+
+export default async function Page() {
+  const user = await getUser();
+
+  return <Checkout user={user} />;
+}
+```
+
+## Implementing the Checkout Component
+
+This is where all the checkout magic happens. It must be a client component since we'll be using some hooks and [Paddle.js](https://developer.paddle.com/paddlejs/overview) library.
+
+Install `@paddle/paddle-js` package. It's a wrapper around Paddle.js. It takes care of loading `https://cdn.paddle.com/paddle/v2/paddle.js` file and initializing it.
+
+```bash
+npm install @paddle/paddle-js
+```
+
+After that, create the `Checkout` component. Check the comments for a detailed explanation.
+
+```tsx filename="src/components/Checkout.tsx"
+'use client';
+
+import { initializePaddle, Paddle } from '@paddle/paddle-js';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+export interface CheckoutProps {
+  user?: User;
+}
+
+export function Checkout({ user }: CheckoutProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [paddle, setPaddle] = useState<Paddle>();
+
+  useEffect(() => {
+    // Don't worry about initializing it multiple times between navigations.
+    // Paddle library will be initialized as a singleton instance in a global variable.
+    // Subsequent calls to `initializePaddle` will return the same instance.
+    initializePaddle({
+      environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT,
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+      eventCallback(event) {
+        switch (event.name) {
+          // Redirect to home page after checkout is closed
+          case 'checkout.closed':
+            router.push('/');
+            break;
+        }
+      },
+    }).then((paddleInstance) => {
+      if (paddleInstance) {
+        setPaddle(paddleInstance);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    // This is passed by Paddle when the customer clicks a payment method update link.
+    // The link is included in payment confirmation emails.
+    // The link can also be retrieved from the Paddle API in `subscription.management_urls.update_payment_method`
+    // You can also manually pass the transaction ID for the same purpose.
+    let transactionId = searchParams.get('_ptxn');
+
+    if (transactionId) {
+      paddle?.Checkout.open({
+        settings: {
+          allowLogout: false,
+        },
+        transactionId,
+      });
+      return;
+    }
+
+    // Pass the priceId as a search parameter to the checkout page.
+    let priceId = searchParams.get('priceId');
+
+    if (priceId) {
+      paddle?.Checkout.open({
+        settings: {
+          // Prevent user from changing their email
+          allowLogout: false,
+        },
+        items: [{ priceId, quantity: 1 }],
+        customer: {
+          // You can pass the customer ID if you have it
+          // This is the Paddle customer ID, not the user ID from your database
+          id: user.customerId,
+          // You can pass the customer email if you have it
+          // You can't use it if you're passing id.
+          email: user.email,
+        },
+        // You can pass additional data to the subscription
+        customData: {
+          userId: user.id,
+        },
+      });
+      return;
+    }
+
+    // Redirect to the home page if no transactionId or priceId
+    router.push('/');
+  }, [paddle?.Checkout, searchParams]);
+
+  return <p>Preparing checkout...</p>;
+}
+```
+
+For all the available options, check the [Paddle.Checkout.open()](https://developer.paddle.com/paddlejs/methods/paddle-checkout-open) method documentation.
+
+## Webhooks
+
+Paddle sends events to your server via webhooks. For example, after a customer purchases a subscription successfully, Paddle sends a `subscription.created` event. You can use this event to update the user's subscription status in your database.
+
+Head over to [Developer Tools / Notifications](https://sandbox-vendors.paddle.com/notifications) to create a webhook. For development, you can use [Cloudflare Quick Tunnels](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) to expose your development server to the internet and use its URL when creating the webhook.
+
+When creating a webhook, you will see a list of events to listen to. I recommend the below events at a minimum.
+
+- `transaction.paid`
+- `subscription.activated`
+- `subscription.cancelled`
+- `subscription.created`
+- `subscription.past_due`
+- `subscription.updated`
+
+Check the [provisioning documentation](https://developer.paddle.com/build/subscriptions/provision-access-webhooks) for further implementation and security considerations.
+
+After creating a webhook, it will generate a secret key. We will need this key to verify the webhook payload. Get it from the dashboard and set it as an environment variable.
+
+We will also need a Paddle API key for the [Paddle Node.js SDK](https://github.com/PaddleHQ/paddle-node-sdk), which will be used to verify the webhook payload. You can get it from [Developer Tools / Authentication](https://sandbox-vendors.paddle.com/authentication-v2).
+
+Do not expose them to the JS bundle since these are secrets.
+
+```text filename=".env.development"
+PADDLE_WEBHOOK_SECRET_KEY=
+PADDLE_API_KEY=
+```
+
+Install the Paddle Node.js SDK.
+
+```bash
+npm install @paddle/paddle-node-sdk
+```
+
+Now, we need to create a POST request endpoint to listen to these events. Luckily, we can use [route handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) for this.
+
+Add this path to the end of the generated Cloudflare Quick Tunnel URL and update the webhook URL in the Paddle dashboard. It should be something like this: `https://poverty-spider-rich-thousand.trycloudflare.com/paddle-webhook`.
+
+```ts filename="src/app/paddle-webhook/route.ts"
+import { Environment, Paddle } from '@paddle/paddle-node-sdk';
+import { NextRequest, NextResponse } from 'next/server';
+
+export const paddle = new Paddle(process.env.PADDLE_API_KEY, {
+  environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as Environment,
+});
+
+export async function POST(request: NextRequest) {
+  const signature = request.headers.get('paddle-signature') ?? '';
+  const body = await request.text();
+
+  try {
+    if (signature && body) {
+      const payload = paddle.webhooks.unmarshal(
+        body,
+        process.env.PADDLE_WEBHOOK_SECRET_KEY,
+        signature,
+      );
+
+      switch (payload.eventType) {
+        // Handle events
+        default:
+          console.log(payload.eventType);
+      }
+    } else {
+      console.error('Signature missing in header.');
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  return new NextResponse('Processed webhook event', { status: 200 });
+}
+```
+
+Check the [Paddle webhooks documentation](https://developer.paddle.com/webhooks/overview) for further implementation and security considerations.
+
+You can process these events as background jobs for robustness. Since Next.js doesn't provide this functionality, you can use a platform like [Trigger.dev](https://trigger.dev/docs/guides/frameworks/nextjs#triggering-your-task-in-next-js) for this purpose.
+
+## Conclusion
+
+Integrating Paddle with Next.js is not as straightforward as Stripe. You have to build everything yourself. However, it gives you more control over the checkout flow and the UI.
