@@ -11,8 +11,8 @@
   "dependencies": {
     "@heroicons/react": "^2.1.5",
     "@mdx-js/react": "^3.0.1",
-    "@next/third-parties": "^15.0.0-canary.145",
-    "next": "15.0.0-canary.145",
+    "@next/third-parties": "^15.0.0-canary.146",
+    "next": "15.0.0-canary.146",
     "react": "19.0.0-rc-a03254bc-20240905",
     "react-dom": "19.0.0-rc-a03254bc-20240905",
     "rehype-highlight": "^7.0.0"
@@ -27,14 +27,14 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "15.0.0-canary.145",
+    "eslint-config-next": "15.0.0-canary.146",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.6",
     "tailwindcss": "^4.0.0-alpha.23",
     "typescript": "^5"
   },
   "overrides": {
-    "next": "15.0.0-canary.145",
+    "next": "15.0.0-canary.146",
     "react": "19.0.0-rc-a03254bc-20240905",
     "react-dom": "19.0.0-rc-a03254bc-20240905"
   }
