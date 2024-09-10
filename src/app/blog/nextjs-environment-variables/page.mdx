@@ -1,0 +1,140 @@
+import Image from 'next/image';
+import openGraphImage from './opengraph-image.jpg';
+import { PostHeader } from '@/components/PostHeader';
+
+export const metadata = {
+  title: 'Keep Next.js Environment Variables in Order',
+  description:
+    'Simplify Next.js environment variables with `env-schema`. Achieve type safety, validation, and easy client-server config separation without the `NEXT_PUBLIC_` hassle.',
+  openGraph: {
+    type: 'article',
+    publishedTime: '2024-09-11',
+    images: [
+      {
+        url: openGraphImage.src,
+        width: 1024,
+        height: 544,
+        alt: 'a pixel art image of a woman looking busy and seeing words flying around in a text editor',
+      },
+    ],
+  },
+};
+
+<PostHeader {...metadata} />
+
+I often end up losing track of environment variables whenever I create a new Next.js project. Yes, it's convenient to use `process.env`, but it doesn't provide IntelliSense or type safety. I also don't like the `NEXT_PUBLIC_` prefix; it's too long to write without auto-completion.
+
+Instead of complaining about it, I decided to find a solution, and that's how I ended up using [env-schema](https://github.com/fastify/env-schema) from Fastify. It's a utility that validates environment variables using [JSON Schema](https://json-schema.org/).
+
+Using `env-schema`, I can create environment-based config objects. It allows me to define types, default values, and required fields. It throws an error if the validation fails.
+
+Another advantage is having a single source for all config values, not just environment variables. It's possible to pass additional data. For example, I can pass a constant value to the config object.
+
+Since Next.js is a full-stack framework, separating client and server configurations is a good idea. I can keep secrets in the server config and expose only the necessary values to the client.
+
+## Server Config
+
+Let's start with the server config. This is where I keep secrets and server-only values. There is no point in exposing them to the client bundle.
+
+```text
+# Server Config
+SECRET=secret
+PORT=42069
+OPTIONAL_VALUE=optional
+```
+
+It doesn't hurt to use the [server-only](https://www.npmjs.com/package/server-only) package from the React team for the server config. It politely warns me when I try to use it in the wrong place.
+
+```bash
+npm install server-only
+```
+
+Now, it's time to create the server config.
+
+```ts
+import 'server-only';
+
+import envSchema, { JSONSchemaType } from 'env-schema';
+
+interface ServerConfig {
+  SECRET: string;
+  PORT: number;
+  OPTIONAL_VALUE?: string;
+  CONSTANT_VALUE: string;
+}
+
+const schema: JSONSchemaType<ServerConfig> = {
+  type: 'object',
+  properties: {
+    SECRET: { type: 'string' },
+    PORT: { type: 'number', default: 42069 },
+    OPTIONAL_VALUE: { type: 'string' },
+    CONSTANT_VALUE: { type: 'string' },
+  },
+  required: ['SECRET', 'PORT', 'CONSTANT_VALUE'],
+};
+
+export const serverConfig = envSchema({
+  schema,
+  data: {
+    CONSTANT_VALUE: 'constant',
+  },
+});
+```
+
+`env-schema` will find the variables defined in the schema from `process.env`. After processing and validating the values, it returns the config object. If the validation fails, it throws an error.
+
+## Client Config
+
+Creating a client config is quite similar. The only difference is the `NEXT_PUBLIC_` prefix, which is how Next.js identifies variables to expose to the client side.
+
+```text
+# Server Config
+SECRET=secret
+PORT=42069
+OPTIONAL_VALUE=optional
+
+# Client Config
+NEXT_PUBLIC_PUBLIC_URL=http://localhost:3000
+```
+
+I don't want to write the `NEXT_PUBLIC_` prefix every time I use a client config. I prefer to create the config keys without the prefix, which requires me to map those keys to variables manually.
+
+```ts
+import envSchema, { JSONSchemaType } from 'env-schema';
+
+interface ClientConfig {
+  PUBLIC_URL: string;
+}
+
+const schema: JSONSchemaType<ClientConfig> = {
+  type: 'object',
+  properties: {
+    PUBLIC_URL: { type: 'string' },
+  },
+  required: ['PUBLIC_URL'],
+};
+
+export const clientConfig = envSchema({
+  schema,
+  data: {
+    PUBLIC_URL: process.env.NEXT_PUBLIC_PUBLIC_URL,
+  },
+});
+```
+
+## Usage
+
+Now I can use the config objects in my application. I can import them anywhere I want. It's possible to use them on both the server and client sides.
+
+```ts
+import { serverConfig } from '@/config/server';
+import { clientConfig } from '@/config/client';
+
+console.log('serverConfig.SECRET', serverConfig.SECRET);
+console.log('serverConfig.PORT', serverConfig.PORT);
+console.log('serverConfig.OPTIONAL_VALUE', serverConfig.OPTIONAL_VALUE);
+console.log('serverConfig.CONSTANT_VALUE', serverConfig.CONSTANT_VALUE);
+
+console.log('clientConfig.PUBLIC_URL', clientConfig.PUBLIC_URL);
+```
