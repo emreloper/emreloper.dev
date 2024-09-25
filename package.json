@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -11,31 +11,31 @@
   "dependencies": {
     "@heroicons/react": "^2.1.5",
     "@mdx-js/react": "^3.0.1",
-    "@next/third-parties": "^15.0.0-canary.146",
-    "next": "15.0.0-canary.146",
-    "react": "19.0.0-rc-a03254bc-20240905",
-    "react-dom": "19.0.0-rc-a03254bc-20240905",
+    "@next/third-parties": "^15.0.0-canary.168",
+    "next": "15.0.0-canary.168",
+    "react": "19.0.0-rc-f9ebd85a-20240925",
+    "react-dom": "19.0.0-rc-f9ebd85a-20240925",
     "rehype-highlight": "^7.0.0"
   },
   "devDependencies": {
     "@mdx-js/loader": "^3.0.1",
-    "@next/mdx": "^14.2.7",
-    "@tailwindcss/postcss": "^4.0.0-alpha.23",
+    "@next/mdx": "^15.0.0-canary.168",
+    "@tailwindcss/postcss": "^4.0.0-alpha.25",
     "@tailwindcss/typography": "^0.5.15",
     "@types/mdx": "^2.0.13",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "15.0.0-canary.146",
+    "eslint-config-next": "^15.0.0-canary.168",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.6",
-    "tailwindcss": "^4.0.0-alpha.23",
-    "typescript": "^5"
+    "tailwindcss": "^4.0.0-alpha.25",
+    "typescript": "^5.6.2"
   },
   "overrides": {
-    "next": "15.0.0-canary.146",
-    "react": "19.0.0-rc-a03254bc-20240905",
-    "react-dom": "19.0.0-rc-a03254bc-20240905"
+    "next": "15.0.0-canary.168",
+    "react": "19.0.0-rc-f9ebd85a-20240925",
+    "react-dom": "19.0.0-rc-f9ebd85a-20240925"
   }
 }
