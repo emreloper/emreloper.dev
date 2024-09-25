@@ -1,5 +1,7 @@
 import { ArticleMetadata } from '@/types/metadata';
+import { UserCircleIcon, UserIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import Markdown from 'react-markdown';
 
 export function PostHeader({ title, description, openGraph }: ArticleMetadata) {
   const image = openGraph.images[0];
@@ -8,7 +10,7 @@ export function PostHeader({ title, description, openGraph }: ArticleMetadata) {
     <>
       <header>
         <h1 itemProp="headline">{title}</h1>
-        <p>{description}</p>
+        <Markdown>{description}</Markdown>
         <p>
           <time
             itemProp="datePublished"
@@ -20,18 +22,22 @@ export function PostHeader({ title, description, openGraph }: ArticleMetadata) {
             })}
           </time>
         </p>
-        <p>
-          by{' '}
-          <span
-            itemProp="author"
-            itemScope
-            itemType="https://schema.org/Person"
-          >
-            <a itemProp="url" href="/">
-              <span itemProp="name">Emre Yilmaz</span>
+        <address
+          className="flex items-center gap-x-2 text-sm/4 not-italic"
+          itemProp="author"
+          itemScope
+          itemType="https://schema.org/Person"
+        >
+          <div>
+            <UserCircleIcon className="size-9" />
+          </div>
+          <div className="inline-flex flex-col">
+            <span itemProp="name">Emre Yilmaz</span>
+            <a className="mt-1" itemProp="url" href="https://x.com/emreloperr">
+              @emreloperr
             </a>
-          </span>
-        </p>
+          </div>
+        </address>
       </header>
       <Image
         itemProp="image"

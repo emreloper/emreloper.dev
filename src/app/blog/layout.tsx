@@ -4,8 +4,14 @@ export default function Layout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <main itemScope itemType="https://schema.org/BlogPosting">
-      {children}
+    <main>
+      <article
+        className="prose prose-slate dark:prose-invert mx-auto"
+        itemScope
+        itemType="https://schema.org/BlogPosting"
+      >
+        {children}
+      </article>
     </main>
   );
 }

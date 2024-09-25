@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { Noto_Sans } from 'next/font/google';
 import Link from 'next/link';
 import { GoogleTagManager } from '@next/third-parties/google';
+import { BookmarkIcon, SparklesIcon } from '@heroicons/react/24/solid';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const notoSans = Noto_Sans({
@@ -32,30 +33,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID!} />
-      <body className="font-noto-sans dark:bg-slate-800">
-        <div className="prose prose-slate dark:prose-invert mx-auto max-w-3xl p-6">
-          <header>
-            <h1 className="flex items-baseline justify-between">
-              <Link href="/">Emre Yilmaz</Link>
-              <a
-                href="https://x.com/emreloperr"
-                target="_blank"
-                rel="noreferrer"
-                title="Follow me on X"
-              >
-                <svg
-                  className="h-6 w-6 fill-[--tw-prose-body]"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <title>X</title>
-                  <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
-                </svg>
-              </a>
+      <body className="font-noto-sans text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+        <div className="px-6">
+          <header className="mx-auto mb-6 max-w-prose py-6">
+            <h1 className="text-xl text-slate-900 dark:text-white">
+              <Link className="inline-flex gap-x-3" href="/">
+                <SparklesIcon className="size-6 text-amber-500" />
+                <span>Emre Yilmaz</span>
+              </Link>
             </h1>
           </header>
-          <hr />
           {children}
         </div>
       </body>
