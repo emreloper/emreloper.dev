@@ -1,4 +1,5 @@
 import { ArticleMetadata } from '@/types/metadata';
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Link from 'next/link';
 import fs from 'node:fs';
@@ -39,6 +40,27 @@ export default async function Page() {
   return (
     <main>
       <article className="mx-auto max-w-prose">
+        <h2 className="text-2xl text-slate-900 dark:text-white">Projects</h2>
+        <div className="mt-8">
+          <ul>
+            <li>
+              <a
+                className="inline-flex items-center"
+                href="https://parlamigo.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ArrowTopRightOnSquareIcon className="size-5" />
+                <div className="ml-3">
+                  <strong>Parlamigo</strong>
+                  <span> - Chat & Learn Languages Faster</span>
+                </div>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </article>
+      <article className="mx-auto mt-16 max-w-prose">
         <h2 className="text-2xl text-slate-900 dark:text-white">Articles</h2>
         <div className="mt-8 flex flex-col gap-y-16">
           {articles.map((article) => {
