@@ -1,5 +1,6 @@
 import { ArticleMetadata } from '@/types/metadata';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid';
+import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import fs from 'node:fs';
@@ -12,6 +13,11 @@ interface Article {
 }
 
 const FILE_REGEX = /.+\..{2,3}$/;
+
+export const metadata: Metadata = {
+  description:
+    "I'm Emre, a developer from the future. I build AI apps in public, and write about the journey.",
+};
 
 export default async function Page() {
   const articles = await Promise.all(
