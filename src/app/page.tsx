@@ -48,7 +48,21 @@ export default async function Page() {
       <article className="mx-auto max-w-prose">
         <h2 className="text-2xl text-slate-900 dark:text-white">Projects</h2>
         <div className="mt-8">
-          <ul>
+          <ul className="flex flex-col gap-y-4">
+            <li>
+              <a
+                className="inline-flex items-center"
+                href="https://moneysnek.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ArrowTopRightOnSquareIcon className="size-5" />
+                <div className="ml-3">
+                  <strong>Money Snek</strong>
+                  <span> - This 👈👉 is money snek. 🐍🐍💰💰</span>
+                </div>
+              </a>
+            </li>
             <li>
               <a
                 className="inline-flex items-center"
@@ -59,7 +73,7 @@ export default async function Page() {
                 <ArrowTopRightOnSquareIcon className="size-5" />
                 <div className="ml-3">
                   <strong>Parlamigo</strong>
-                  <span> - Chat & Learn Languages Faster</span>
+                  <span> - AI Language Tutor 💬</span>
                 </div>
               </a>
             </li>
