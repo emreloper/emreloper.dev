@@ -52,20 +52,6 @@ export default async function Page() {
             <li>
               <a
                 className="inline-flex items-center"
-                href="https://moneysnek.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ArrowTopRightOnSquareIcon className="size-5" />
-                <div className="ml-3">
-                  <strong>Money Snek</strong>
-                  <span> - This 👈👉 is money snek. 🐍🐍💰💰</span>
-                </div>
-              </a>
-            </li>
-            <li>
-              <a
-                className="inline-flex items-center"
                 href="https://parlamigo.com"
                 target="_blank"
                 rel="noopener noreferrer"
