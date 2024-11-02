@@ -3,6 +3,10 @@ import type { NextConfig } from 'next';
 import rehypeHighlight from 'rehype-highlight';
 
 const nextConfig: NextConfig = {
+  experimental: {
+    dynamicIO: true,
+    reactCompiler: true,
+  },
   output: 'export',
   images: {
     unoptimized: true,

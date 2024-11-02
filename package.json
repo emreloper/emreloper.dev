@@ -10,33 +10,34 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
-    "@mdx-js/react": "^3.0.1",
-    "@next/third-parties": "^15.0.0-canary.168",
-    "next": "15.0.0-canary.168",
-    "react": "19.0.0-rc-f9ebd85a-20240925",
-    "react-dom": "19.0.0-rc-f9ebd85a-20240925",
+    "@mdx-js/react": "^3.1.0",
+    "@next/third-parties": "^15.0.3-canary.4",
+    "next": "15.0.3-canary.4",
+    "react": "19.0.0-rc-7c8e5e7a-20241101",
+    "react-dom": "19.0.0-rc-7c8e5e7a-20241101",
     "react-markdown": "^9.0.1",
-    "rehype-highlight": "^7.0.0"
+    "rehype-highlight": "^7.0.1"
   },
   "devDependencies": {
     "@mdx-js/loader": "^3.0.1",
-    "@next/mdx": "^15.0.0-canary.168",
-    "@tailwindcss/postcss": "^4.0.0-alpha.25",
+    "@next/mdx": "^15.0.3-canary.4",
+    "@tailwindcss/postcss": "^4.0.0-alpha.31",
     "@tailwindcss/typography": "^0.5.15",
     "@types/mdx": "^2.0.13",
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "babel-plugin-react-compiler": "^19.0.0-beta-6fc168f-20241025",
     "eslint": "^8",
-    "eslint-config-next": "^15.0.0-canary.168",
+    "eslint-config-next": "^15.0.3-canary.4",
     "prettier": "^3.3.3",
-    "prettier-plugin-tailwindcss": "^0.6.6",
-    "tailwindcss": "^4.0.0-alpha.25",
-    "typescript": "^5.6.2"
+    "prettier-plugin-tailwindcss": "^0.6.8",
+    "tailwindcss": "^4.0.0-alpha.31",
+    "typescript": "^5.6.3"
   },
   "overrides": {
-    "next": "15.0.0-canary.168",
-    "react": "19.0.0-rc-f9ebd85a-20240925",
-    "react-dom": "19.0.0-rc-f9ebd85a-20240925"
+    "next": "15.0.3-canary.4",
+    "react": "19.0.0-rc-7c8e5e7a-20241101",
+    "react-dom": "19.0.0-rc-7c8e5e7a-20241101"
   }
 }

@@ -1,5 +1,5 @@
 import { ArticleMetadata } from '@/types/metadata';
-import { UserCircleIcon, UserIcon } from '@heroicons/react/24/solid';
+import { UserCircleIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Markdown from 'react-markdown';
 

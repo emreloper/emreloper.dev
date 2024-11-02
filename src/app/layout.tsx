@@ -2,11 +2,11 @@ import 'highlight.js/styles/tokyo-night-dark.css';
 
 import '@/app/app.css';
 
+import { SparklesIcon } from '@heroicons/react/24/solid';
+import { GoogleTagManager } from '@next/third-parties/google';
 import type { Metadata } from 'next';
 import { Noto_Sans } from 'next/font/google';
 import Link from 'next/link';
-import { GoogleTagManager } from '@next/third-parties/google';
-import { BookmarkIcon, SparklesIcon } from '@heroicons/react/24/solid';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const notoSans = Noto_Sans({
