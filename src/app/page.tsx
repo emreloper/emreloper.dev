@@ -1,4 +1,6 @@
 import { Articles } from '@/components/Articles';
+import { faBluesky, faXTwitter } from '@fortawesome/free-brands-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
@@ -12,6 +14,21 @@ export default async function Page() {
   return (
     <main>
       <article className="mx-auto max-w-prose">
+        <h2 className="text-2xl text-slate-900 dark:text-white">Socials</h2>
+        <div className="mt-8 flex gap-x-4">
+          <a className="-ml-2 p-2" href="https://x.com/emreloperr" title="X">
+            <FontAwesomeIcon className="text-2xl/none" icon={faXTwitter} />
+          </a>
+          <a
+            className="p-2"
+            href="https://bsky.app/profile/emreloper.bsky.social"
+            title="Bluesky"
+          >
+            <FontAwesomeIcon className="text-2xl/none" icon={faBluesky} />
+          </a>
+        </div>
+      </article>
+      <article className="mx-auto mt-16 max-w-prose">
         <h2 className="text-2xl text-slate-900 dark:text-white">Projects</h2>
         <div className="mt-8">
           <ul className="flex flex-col gap-y-4">

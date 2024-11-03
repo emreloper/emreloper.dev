@@ -1,3 +1,5 @@
+import '@fortawesome/fontawesome-svg-core/styles.css';
+
 import 'highlight.js/styles/tokyo-night-dark.css';
 
 import '@/app/app.css';
