@@ -48,6 +48,29 @@ export function PostHeader({ title, description, openGraph }: ArticleMetadata) {
         sizes="680px"
         priority
       />
+      <div className="flex">
+        <a
+          id="1373766"
+          className="mx-auto"
+          href="https://digitalocean.pxf.io/c/2199350/1373766/15890?u=https%3A%2F%2Ftry.digitalocean.com%2Fdeveloperbrand%2F"
+          target="_top"
+        >
+          <Image
+            src="//a.impactradius-go.com/display-ad/15890-1373766"
+            alt=""
+            width={300}
+            height={250}
+          />
+        </a>
+        <Image
+          className="invisible absolute"
+          src="https://imp.pxf.io/i/2199350/1373766/15890"
+          alt=""
+          height={0}
+          width={0}
+          unoptimized
+        />
+      </div>
     </>
   );
 }
