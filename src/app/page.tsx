@@ -1,5 +1,9 @@
 import { Articles } from '@/components/Articles';
-import { faBluesky, faXTwitter } from '@fortawesome/free-brands-svg-icons';
+import {
+  faBluesky,
+  faLinkedinIn,
+  faXTwitter,
+} from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid';
 import { Metadata } from 'next';
@@ -16,15 +20,32 @@ export default async function Page() {
       <article className="mx-auto max-w-prose">
         <h2 className="text-2xl text-slate-900 dark:text-white">Socials</h2>
         <div className="mt-8 flex gap-x-4">
-          <a className="-ml-2 p-2" href="https://x.com/emreloperr" title="X">
+          <a
+            className="-ml-2 p-2"
+            href="https://x.com/emreloperr"
+            title="X"
+            target="_blank"
+            rel="noreferrer"
+          >
             <FontAwesomeIcon className="text-2xl/none" icon={faXTwitter} />
           </a>
           <a
             className="p-2"
             href="https://bsky.app/profile/emreloper.bsky.social"
             title="Bluesky"
+            target="_blank"
+            rel="noreferrer"
           >
             <FontAwesomeIcon className="text-2xl/none" icon={faBluesky} />
+          </a>
+          <a
+            className="p-2"
+            href="https://www.linkedin.com/in/emreloper/"
+            title="LinkedIn"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <FontAwesomeIcon className="text-2xl/none" icon={faLinkedinIn} />
           </a>
         </div>
       </article>
