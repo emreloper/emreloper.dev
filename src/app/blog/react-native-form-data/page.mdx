@@ -1,0 +1,141 @@
+import Image from 'next/image';
+import openGraphImage from './opengraph-image.jpg';
+import { PostHeader } from '@/components/PostHeader';
+
+export const metadata = {
+  title: 'React Native 0.74+ and failing to parse body as FormData',
+  description:
+    'I was not able to send files from a React Native app to a Node server. It turned out to be a faulty commit in the React Native repo. Here is my debugging process and how I solved it with a workaround.',
+  openGraph: {
+    type: 'article',
+    publishedTime: '2024-12-02',
+    images: [
+      {
+        url: openGraphImage.src,
+        width: 1024,
+        height: 544,
+        alt: 'an 8bit pixel art image of a woman  carrying photo albums between a gigantic mobile phone and a retro computer, halucination',
+      },
+    ],
+  },
+};
+
+<PostHeader {...metadata} />
+
+I was building an iOS app using Expo. However, universe wanted to send me a message and gave me an unsolvable issue about the core functionality of my app. Uploading photos...
+
+React Native [patches FormData Web API](https://github.com/facebook/react-native/blob/v0.76.3/packages/react-native/Libraries/Network/FormData.js) to support sending local files in a request. Instead of appending a `File` or `Blob`, you append a JS object with local file URI. Here is an example:
+
+```ts
+const result = await ImagePicker.launchImageLibraryAsync({
+  mediaTypes: ['images'],
+  allowsMultipleSelection: true,
+});
+
+const formData = new FormData();
+
+for (const asset of result.assets) {
+  // @ts-expect-error: special react native format for form data
+  formData.append(`photos`, {
+    uri: asset.uri,
+    name: asset.fileName,
+    type: asset.mimeType,
+  });
+}
+
+await fetch('http://localhost:3000/api', {
+  method: 'POST',
+  body: formData,
+});
+```
+
+But there was something wrong. No matter what I did, the server was not able to parse it. First, I thought it's a problem with [Nitro](https://nitro.build/). Then I tried [Hono](https://hono.dev/) and it was the same. I was getting an error like `Failed to parse body as FormData` over and over again. After spending countless hours debugging on the server, I was convinced that it was a React Native problem.
+
+One of my Google searches lead me to [this](https://github.com/facebook/react-native/issues/44737) React Native issue on GitHub. Long story short, [this](https://github.com/facebook/react-native/pull/35060) PR added an additional header value to `FormData` patch to support non-ascii characters in file names.
+
+`Content-Disposition` header has a directive called `filename` which doesn't support ascii characters. However, there is another directive called `filename*` which supports it. But, there is a catch. `multipart/form-data` doesn't have `filename*` directive. In the mentioned commit, React Native adds this directive to support non-ascii characters. As a result, server parsers are not able to parse the request body as `FormData`.
+
+> Note that the request header does not have the filename\* parameter and does not allow RFC 5987 encoding.
+
+These are all related to some RFCs as explained in [Content-Disposition MDN docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition).
+
+## The workaround
+
+The [relevant GitHub issue](https://github.com/facebook/react-native/issues/44737) is open since May 2024 and there is no light in the horizon.
+
+As a result, I created a genius workaround. I patched the already patched `FormData` implementation and used it 🤡
+
+I created a `CustomFormData` class and extended the global `FormData` class. Then I overwrote the [getParts](https://github.com/facebook/react-native/blob/605e2e443bf893d5896f1d613cac763564dc3f69/packages/react-native/Libraries/Network/FormData.js#L73-L96) method implementation from the React Native repo. The only change is the removal of `filename*` directive.
+
+```ts
+type Headers = { [name: string]: string };
+type FormDataPart =
+  | {
+      string: string;
+      headers: Headers;
+    }
+  | {
+      uri: string;
+      headers: Headers;
+      name?: string;
+      type?: string;
+    };
+
+export class CustomFormData extends FormData {
+  constructor() {
+    super();
+  }
+
+  getParts(): Array<FormDataPart> {
+    // @ts-expect-error
+    return this._parts.map(([name, value]) => {
+      const contentDisposition = 'form-data; name="' + name + '"';
+
+      const headers: Headers = { 'content-disposition': contentDisposition };
+
+      // The body part is a "blob", which in React Native just means
+      // an object with a `uri` attribute. Optionally, it can also
+      // have a `name` and `type` attribute to specify filename and
+      // content type (cf. web Blob interface.)
+      if (typeof value === 'object' && !Array.isArray(value) && value) {
+        if (typeof value.name === 'string') {
+          headers['content-disposition'] += `; filename="${value.name}"`;
+        }
+        if (typeof value.type === 'string') {
+          headers['content-type'] = value.type;
+        }
+        return { ...value, headers, fieldName: name };
+      }
+      // Convert non-object values to strings as per FormData.append() spec
+      return { string: String(value), headers, fieldName: name };
+    });
+  }
+}
+```
+
+Once you have the workaround, the usage is simple. Use the `CustomFormData` class in React Native code instead of `FormData`.
+
+```ts
+const result = await ImagePicker.launchImageLibraryAsync({
+  mediaTypes: ['images'],
+  allowsMultipleSelection: true,
+});
+
+const formData = new CustomFormData();
+
+for (const asset of result.assets) {
+  // @ts-expect-error: special react native format for form data
+  formData.append(`photos`, {
+    uri: asset.uri,
+    name: asset.fileName,
+    type: asset.mimeType,
+  });
+}
+
+await fetch('http://localhost:3000', {
+  method: 'POST',
+  body: formData,
+});
+```
+
+Note that, I tested this only on iOS development build. It may not work on other environments. But at least you'll know what's the issue.
