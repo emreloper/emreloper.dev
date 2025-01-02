@@ -1,6 +1,6 @@
+import { PostHeader } from '@/components/PostHeader';
 import Image from 'next/image';
 import openGraphImage from './opengraph-image.jpg';
-import { PostHeader } from '@/components/PostHeader';
 
 export const metadata = {
   title: 'React Native 0.74+ and failing to parse body as FormData',
@@ -21,6 +21,8 @@ export const metadata = {
 };
 
 <PostHeader {...metadata} />
+
+> Update: This issue has been fixed in React Native [v0.77.0-rc.1](https://github.com/facebook/react-native/releases/tag/v0.77.0-rc.1).
 
 I was building an iOS app using Expo. However, universe wanted to send me a message and gave me an unsolvable issue about the core functionality of my app. Uploading photos...
 

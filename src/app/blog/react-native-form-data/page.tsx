@@ -2,6 +2,6 @@ import { permanentRedirect } from 'next/navigation';
 
 export default function Page() {
   permanentRedirect(
-    '/blog/implementing-a-magic-link-authentication-for-my-telegram-bot-using-nextjs',
+    '/blog/react-native-0-74-plus-and-failing-to-parse-body-as-formdata',
   );
 }
