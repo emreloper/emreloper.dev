@@ -47,12 +47,11 @@ export async function Articles() {
           const { publishedTime } = openGraph;
 
           return (
-            <article
-              key={article.slug}
-              className="prose prose-slate dark:prose-invert grow"
-            >
-              <h3 className="text-slate-900 dark:text-white">
-                <Link href={`/blog/${slug}`}>{title}</Link>
+            <article key={article.slug} className="grow">
+              <h3 className="mb-2 text-xl text-slate-900 dark:text-white">
+                <Link className="hover:underline" href={`/blog/${slug}`}>
+                  {title}
+                </Link>
               </h3>
               <p>
                 <time dateTime={publishedTime}>
