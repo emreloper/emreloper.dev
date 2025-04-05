@@ -49,7 +49,7 @@ export default async function Page() {
           </a>
         </div>
       </article>
-      <article className="mx-auto mt-16 max-w-prose">
+{/*       <article className="mx-auto mt-16 max-w-prose">
         <h2 className="text-2xl text-slate-900 dark:text-white">Projects</h2>
         <div className="mt-8">
           <ul className="flex flex-col gap-y-4">
@@ -69,7 +69,7 @@ export default async function Page() {
             </li>
           </ul>
         </div>
-      </article>
+      </article> */}
       <Suspense fallback={<div>Loading articles....</div>}>
         <Articles />
       </Suspense>
